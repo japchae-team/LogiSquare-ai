@@ -1,6 +1,7 @@
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 
+import cv2
+import numpy as np
 from fastapi import UploadFile
 from ultralytics import YOLO
 
@@ -22,14 +23,15 @@ class YoloDetector:
 
     async def detect(self, file: UploadFile) -> list[DetectionItem]:
         contents = await file.read()
-        suffix = Path(file.filename or "image.jpg").suffix or ".jpg"
+        if not contents:
+            raise ValueError("Uploaded image file is empty")
 
-        with NamedTemporaryFile(delete=True, suffix=suffix) as temp_file:
-            temp_file.write(contents)
-            temp_file.flush()
+        image = cv2.imdecode(np.frombuffer(contents, np.uint8), cv2.IMREAD_COLOR)
+        if image is None:
+            raise ValueError("Uploaded file could not be decoded as an image")
 
-            model = self._load_model()
-            results = model.predict(str(temp_file.name), conf=settings.yolo_confidence, verbose=False)
+        model = self._load_model()
+        results = model.predict(image, conf=settings.yolo_confidence, verbose=False)
 
         detections: list[DetectionItem] = []
         for result in results:

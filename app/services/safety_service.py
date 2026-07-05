@@ -12,7 +12,14 @@ class SafetyService:
                 detail="Image file is required",
             )
 
-        detections = await yolo_detector.detect(file)
+        try:
+            detections = await yolo_detector.detect(file)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(exc),
+            ) from exc
+
         return DetectionResponse(detections=detections, count=len(detections))
 
 
