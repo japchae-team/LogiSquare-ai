@@ -10,6 +10,7 @@ env/
 .mypy_cache/
 .ruff_cache/
 /models/
+.runtime/
 runs/
 uploads/
 *.md
