@@ -10,6 +10,7 @@ router = APIRouter()
 @router.post(
     "/detect",
     response_model=ApiResponse[DetectionResponse],
+    response_model_exclude_none=True,
     responses={
         400: {"model": ErrorResponse, "description": "Invalid image file"},
         422: {"model": ErrorResponse, "description": "Invalid request"},
@@ -17,6 +18,5 @@ router = APIRouter()
     },
 )
 async def detect_safety_equipment(file: UploadFile = File(...)) -> ApiResponse[DetectionResponse]:
-    result = await safety_service.detect(file)
+    result = await safety_service.detect(file=file)
     return ApiResponse(success=True, data=result, message="Detection completed")
-

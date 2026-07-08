@@ -1,0 +1,12 @@
+path: /data/inha/team04/workspace/ppe-helmet-vest-v3-split
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 4
+names:
+  0: helmet
+  1: no_helmet
+  2: no_safety_vest
+  3: safety_vest
+
