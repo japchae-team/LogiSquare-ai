@@ -13,4 +13,6 @@ env/
 .runtime/
 runs/
 uploads/
+tmp/
+*.pt
 *.md

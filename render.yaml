@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: logisquare-ai
+    runtime: python
+    plan: free
+    buildCommand: bash build.sh
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: YOLO_MODEL_PATH
+        value: models/ppe-helmet-vest-best.pt
+      - key: YOLO_CONFIDENCE
+        value: "0.25"
+      - key: YOLO_CONFIG_DIR
+        value: .runtime/ultralytics
+      - key: MPLCONFIGDIR
+        value: .runtime/matplotlib
+      - key: MODEL_DOWNLOAD_URL
+        sync: false
