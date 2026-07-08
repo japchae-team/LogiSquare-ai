@@ -3,7 +3,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-source ~/.bashrc
+source ~/miniforge3/etc/profile.d/conda.sh
 conda activate ai
 
 export YOLO_MODEL_PATH="${YOLO_MODEL_PATH:-models/ppe-helmet-vest-best.pt}"
