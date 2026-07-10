@@ -11,7 +11,6 @@ from app.core.config import settings
 from app.schemas.safety import DetectionItem
 
 
-ANNOTATED_IMAGE_DIR = Path("uploads/safety-events")
 ANNOTATED_IMAGE_URL_PREFIX = "/uploads/safety-events"
 
 
@@ -63,7 +62,8 @@ class YoloDetector:
         return DetectionResult(detections=sorted_detections, annotated_image_url=annotated_image_url)
 
     def _save_annotated_image(self, image: np.ndarray, detections: list[DetectionItem]) -> str:
-        ANNOTATED_IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+        annotated_image_dir = settings.upload_dir / "safety-events"
+        annotated_image_dir.mkdir(parents=True, exist_ok=True)
 
         annotated_image = image.copy()
         for detection in detections:
@@ -94,9 +94,10 @@ class YoloDetector:
             )
 
         file_name = f"{uuid4().hex}.jpg"
-        output_path = ANNOTATED_IMAGE_DIR / file_name
-        cv2.imwrite(str(output_path), annotated_image)
-        return f"{ANNOTATED_IMAGE_URL_PREFIX}/{file_name}"
+        output_path = annotated_image_dir / file_name
+        if not cv2.imwrite(str(output_path), annotated_image):
+            raise ValueError("Annotated image could not be saved")
+        return f"{settings.ai_server_base_url}{ANNOTATED_IMAGE_URL_PREFIX}/{file_name}"
 
     def _label_color(self, label: str) -> tuple[int, int, int]:
         normalized_label = label.strip().lower().replace("_", "-")
