@@ -1,5 +1,7 @@
+import httpx
 from fastapi import HTTPException, UploadFile, status
 
+from app.core.config import settings
 from app.models.yolo_detector import yolo_detector
 from app.schemas.safety import DetectionItem, DetectionResponse, DetectionSummary
 
@@ -42,7 +44,7 @@ class SafetyService:
         event_type = self._build_event_type(detections, helmet_worn, vest_worn)
         confidence_score = max((detection.confidence for detection in detections), default=0.0)
 
-        return DetectionResponse(
+        response = DetectionResponse(
             camera_code=camera_code,
             source_type="CCTV",
             event_type=event_type,
@@ -56,6 +58,38 @@ class SafetyService:
             ],
             count=len(detections),
         )
+        await self._send_result_to_backend(response)
+        return response
+
+    async def _send_result_to_backend(self, detection_response: DetectionResponse) -> None:
+        if not settings.backend_callback_enabled:
+            return
+
+        callback_url = settings.backend_ai_cctv_event_url
+        if not callback_url:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Backend callback URL is not configured",
+            )
+
+        payload = detection_response.model_dump(by_alias=True)
+        try:
+            async with httpx.AsyncClient(timeout=settings.backend_request_timeout) as client:
+                backend_response = await client.post(callback_url, json=payload)
+                backend_response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=(
+                    "Backend callback failed: "
+                    f"status={exc.response.status_code}, body={exc.response.text}"
+                ),
+            ) from exc
+        except httpx.HTTPError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Failed to send detection result to backend: {type(exc).__name__}: {exc!r}",
+            ) from exc
 
     def _has_label(self, detections: list[DetectionItem], labels: set[str]) -> bool:
         return any(self._normalize_label(detection.label) in labels for detection in detections)
