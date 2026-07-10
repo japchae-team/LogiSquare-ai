@@ -10,14 +10,22 @@ NO_HELMET_LABELS = {"no-helmet", "nohelmet", "no-hardhat", "no-hard-hat"}
 VEST_LABELS = {"vest", "safety-vest", "reflective-vest"}
 NO_VEST_LABELS = {"no-vest", "novest", "no-safety-vest", "no-reflective-vest"}
 SHOES_LABELS = {"shoes", "shoe", "boots", "boot", "safety-shoes", "safety-boots"}
+ALLOWED_CAMERA_CODES = {"CCTV-A-01", "CCTV-A-02", "CCTV-B-01", "CCTV-C-01"}
 
 
 class SafetyService:
-    async def detect(self, file: UploadFile) -> DetectionResponse:
+    async def detect(self, file: UploadFile, camera_code: str) -> DetectionResponse:
         if not file.content_type or not file.content_type.startswith("image/"):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Image file is required",
+            )
+
+        camera_code = camera_code.strip()
+        if camera_code not in ALLOWED_CAMERA_CODES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid cameraCode",
             )
 
         try:
@@ -35,6 +43,7 @@ class SafetyService:
         confidence_score = max((detection.confidence for detection in detections), default=0.0)
 
         return DetectionResponse(
+            camera_code=camera_code,
             source_type="CCTV",
             event_type=event_type,
             confidence_score=confidence_score,
