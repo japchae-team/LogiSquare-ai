@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from fastapi import FastAPI, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -13,8 +11,8 @@ from app.schemas.common import ApiResponse, ErrorResponse
 
 app = FastAPI(title=settings.app_name)
 
-Path("uploads").mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+settings.upload_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 
 app.include_router(api_router, prefix="/api/v1")
 
