@@ -10,6 +10,14 @@ services:
         value: models/ppe-helmet-vest-best.pt
       - key: YOLO_CONFIDENCE
         value: "0.25"
+      - key: AI_SERVER_BASE_URL
+        value: http://165.246.170.53:8000
+      - key: BACKEND_CALLBACK_ENABLED
+        value: "true"
+      - key: BACKEND_BASE_URL
+        value: https://logisquare.p-e.kr
+      - key: BACKEND_REQUEST_TIMEOUT
+        value: "15.0"
       - key: YOLO_CONFIG_DIR
         value: .runtime/ultralytics
       - key: MPLCONFIGDIR

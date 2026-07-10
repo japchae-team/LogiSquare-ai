@@ -13,7 +13,7 @@ def _get_bool_env(name: str, default: bool) -> bool:
 @dataclass(frozen=True)
 class Settings:
     app_name: str = "LogiSquare AI"
-    ai_server_base_url: str = os.getenv("AI_SERVER_BASE_URL", "http://165.246.170.53:8000").rstrip("/")
+    ai_server_base_url: str = os.getenv("AI_SERVER_BASE_URL", "http://127.0.0.1:8000").rstrip("/")
     yolo_model_path: str = os.getenv("YOLO_MODEL_PATH", "models/ppe-helmet-vest-best.pt")
     yolo_confidence: float = float(os.getenv("YOLO_CONFIDENCE", "0.25"))
     backend_callback_enabled: bool = _get_bool_env("BACKEND_CALLBACK_ENABLED", False)
