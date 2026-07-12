@@ -2,10 +2,19 @@ $ErrorActionPreference = "Stop"
 
 Set-Location $PSScriptRoot
 
-$env:YOLO_MODEL_PATH = "models\ppe-helmet-vest-best.pt"
-$env:YOLO_CONFIDENCE = "0.15"
-$env:AI_SERVER_BASE_URL = "http://127.0.0.1:8000"
-$env:YOLO_CONFIG_DIR = Join-Path $PSScriptRoot ".runtime\ultralytics"
-$env:MPLCONFIGDIR = Join-Path $PSScriptRoot ".runtime\matplotlib"
+$EnvFile = Join-Path $PSScriptRoot ".env"
+if (-not (Test-Path $EnvFile)) {
+    throw ".env file not found: $EnvFile"
+}
+
+Get-Content $EnvFile | ForEach-Object {
+    $Line = $_.Trim()
+    if ($Line -ne "" -and -not $Line.StartsWith("#")) {
+        $Parts = $Line.Split("=", 2)
+        if ($Parts.Count -eq 2) {
+            [Environment]::SetEnvironmentVariable($Parts[0].Trim(), $Parts[1].Trim(), "Process")
+        }
+    }
+}
 
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
